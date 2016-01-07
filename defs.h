@@ -118,6 +118,8 @@ void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
 void            yield(void);
+void            save_process(void);
+void            load_process(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

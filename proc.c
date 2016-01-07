@@ -6,10 +6,12 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "fs.h"
+#include "buf.h"
 
 struct {
-  struct spinlock lock;
-  struct proc proc[NPROC];
+    struct spinlock lock;
+    struct proc proc[NPROC];
 } ptable;
 
 static struct proc *initproc;
@@ -44,7 +46,7 @@ allocproc(void)
   release(&ptable.lock);
   return 0;
 
-found:
+  found:
   p->state = EMBRYO;
   p->pid = nextpid++;
   release(&ptable.lock);
@@ -55,11 +57,11 @@ found:
     return 0;
   }
   sp = p->kstack + KSTACKSIZE;
-  
+
   // Leave room for trap frame.
   sp -= sizeof *p->tf;
   p->tf = (struct trapframe*)sp;
-  
+
   // Set up new context to start executing at forkret,
   // which returns to trapret.
   sp -= 4;
@@ -80,7 +82,7 @@ userinit(void)
 {
   struct proc *p;
   extern char _binary_initcode_start[], _binary_initcode_size[];
-  
+
   p = allocproc();
   initproc = p;
   if((p->pgdir = setupkvm()) == 0)
@@ -108,7 +110,7 @@ int
 growproc(int n)
 {
   uint sz;
-  
+
   sz = proc->sz;
   if(n > 0){
     if((sz = allocuvm(proc->pgdir, sz, sz + n)) == 0)
@@ -120,6 +122,31 @@ growproc(int n)
   proc->sz = sz;
   switchuvm(proc);
   return 0;
+}
+
+void
+save_process(void)
+{
+  struct buf *buffer = bread(0, 512);
+
+  memmove(buffer->data, proc, sizeof(*proc));
+  brelse(buffer);
+
+  cprintf("save_process: successful\n");
+}
+
+void
+load_process(void)
+{
+  cprintf("find in buffer\n");
+  struct buf *buffer = bread(0, 512);
+  cprintf("alloc proc\n");
+  struct proc *loaded_process = allocproc();
+
+  cprintf("move section\n");
+  memmove(loaded_process, buffer->data, sizeof(buffer->data));
+  cprintf("process name: %s and process id: %d and process size: %d\n"
+          , loaded_process->name, loaded_process->pid, loaded_process->sz);
 }
 
 // Create a new process copying p as the parent.
@@ -155,14 +182,14 @@ fork(void)
   np->cwd = idup(proc->cwd);
 
   safestrcpy(np->name, proc->name, sizeof(proc->name));
- 
+
   pid = np->pid;
 
   // lock to force the compiler to emit the np->state write last.
   acquire(&ptable.lock);
   np->state = RUNNABLE;
   release(&ptable.lock);
-  
+
   return pid;
 }
 
@@ -336,13 +363,13 @@ forkret(void)
 
   if (first) {
     // Some initialization functions must be run in the context
-    // of a regular process (e.g., they call sleep), and thus cannot 
+    // of a regular process (e.g., they call sleep), and thus cannot
     // be run from main().
     first = 0;
     iinit(ROOTDEV);
     initlog(ROOTDEV);
   }
-  
+
   // Return to "caller", actually trapret (see allocproc).
 }
 
@@ -436,18 +463,18 @@ void
 procdump(void)
 {
   static char *states[] = {
-  [UNUSED]    "unused",
-  [EMBRYO]    "embryo",
-  [SLEEPING]  "sleep ",
-  [RUNNABLE]  "runble",
-  [RUNNING]   "run   ",
-  [ZOMBIE]    "zombie"
+          [UNUSED]    "unused",
+          [EMBRYO]    "embryo",
+          [SLEEPING]  "sleep ",
+          [RUNNABLE]  "runble",
+          [RUNNING]   "run   ",
+          [ZOMBIE]    "zombie"
   };
   int i;
   struct proc *p;
   char *state;
   uint pc[10];
-  
+
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->state == UNUSED)
       continue;

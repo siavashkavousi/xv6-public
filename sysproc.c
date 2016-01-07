@@ -7,6 +7,18 @@
 #include "mmu.h"
 #include "proc.h"
 
+void
+sys_save_process(void)
+{
+  save_process();
+}
+
+void
+sys_load_process(void)
+{
+  load_process();
+}
+
 int
 sys_fork(void)
 {
