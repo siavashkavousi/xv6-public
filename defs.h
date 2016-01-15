@@ -30,6 +30,9 @@ void panic(char *) __attribute__((noreturn));
 // exec.c
 int exec(char *, char **);
 
+// sysfile.c
+int open_file(char *, int);
+
 // file.c
 struct file *filealloc(void);
 
@@ -272,6 +275,10 @@ void freevm(pde_t *);
 void inituvm(pde_t *, char *, uint);
 
 int loaduvm(pde_t *, char *, struct inode *, uint, uint);
+
+char *copy_pgtable2mem(pde_t *, int);
+
+int copy_mem2pgtable(pde_t *, const void *, char *);
 
 pde_t *copyuvm(pde_t *, uint);
 

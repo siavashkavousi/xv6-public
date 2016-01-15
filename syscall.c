@@ -118,6 +118,8 @@ extern int sys_save_process(void);
 
 extern int sys_load_process(void);
 
+extern int sys_open_file(void);
+
 static int (*syscalls[])(void) = {
         [SYS_fork]    sys_fork,
         [SYS_exit]    sys_exit,
@@ -142,6 +144,7 @@ static int (*syscalls[])(void) = {
         [SYS_close]   sys_close,
         [SYS_save_process] sys_save_process,
         [SYS_load_process] sys_load_process,
+        [SYS_open_file] sys_open_file,
 };
 
 void

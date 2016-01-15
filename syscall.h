@@ -22,3 +22,4 @@
 #define SYS_close  21
 #define SYS_save_process 22
 #define SYS_load_process 23
+#define SYS_open_file 24
