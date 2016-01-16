@@ -467,13 +467,3 @@ int open_file(char *path, int omode) {
     f->writable = (omode & O_WRONLY) || (omode & O_RDWR);
     return fd;
 }
-
-int sys_open_file() {
-    char *path;
-    int omode;
-
-    if (argstr(0, &path) < 0 || argint(1, &omode) < 0)
-        return -1;
-
-    return open_file(path, omode);
-}
