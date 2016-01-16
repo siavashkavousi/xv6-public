@@ -293,12 +293,12 @@ clearpteu(pde_t *pgdir, char *uva) {
 }
 
 char *
-copy_pgtable2mem(pde_t *pgdir, int page_number) {
+copy_pgtable2mem(pde_t *pgdir, int va) {
     pte_t *pte;
     uint pa;
     char *mem;
 
-    if ((pte = walkpgdir(pgdir, (void *) page_number, 0)) == 0)
+    if ((pte = walkpgdir(pgdir, (void *) va, 0)) == 0)
         panic("copy_pgtable2mem: pte should exist");
     if (!(*pte & PTE_P))
         panic("copy_pgtable2mem: page not present");

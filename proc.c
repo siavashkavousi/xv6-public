@@ -6,7 +6,6 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
-#include "fcntl.h"
 #include "fs.h"
 #include "file.h"
 
@@ -123,151 +122,74 @@ growproc(int n) {
     return 0;
 }
 
-void
+int
 suspend_process(char *path) {
-    //region work with buffer
-//    struct buf *buffer = bread(0, 512);
-//
-//    procdump();
-//
-//    memmove(buffer->data, proc, sizeof(*proc));
-//    bwrite(buffer);
-//    brelse(buffer);
-//
-//    cprintf("save_process: successful\n");
-//    exit();
-    //endregion
-
-    int fd;
-    struct file *file;
+    cprintf("suspend_process: started\n");
+    int size = strlen(path);
 
     //region process struct
-    write2file(proc, "backup", (char *) proc);
+    char proc_file_name[size + 5];
+    strcat(proc_file_name, path, "_proc");
+    write_to_file(proc, proc_file_name, (char *) proc, sizeof(struct proc));
     //endregion
 
     //region trapframe
-//    write2file(proc, "backup_tf", )
-    if ((fd = open_file("backup_tf", O_CREATE | O_RDWR)) < 0)
-        panic("save_process: backup_tf open_file failed\n");
-    file = proc->ofile[fd];
-    if ((filewrite(file, (char *) proc->tf, sizeof(struct trapframe))) != sizeof(struct trapframe))
-        panic("save_process: backup_tf filewrite failed\n");
-
-    cprintf("trapframe : %d and %d\n", proc->tf->eip, proc->tf->cs);
+    char tf_file_name[size + 3];
+    strcat(tf_file_name, path, "_tf");
+    write_to_file(proc, tf_file_name, (char *) proc->tf, sizeof(struct trapframe));
     //endregion
 
-    //region beta (copy page tables)
-//    int i;
-//    int counter = 0;
-//    for (i = 0; i < proc->sz; i += PGSIZE) {
-
-    char buf[4];
-    char *sl = "sia";
-    int x = 0;
-    char i = (char) (x + 48);
-
-    concat(buf, sl, i);
-
-    char *mem = copy_pgtable2mem(proc->pgdir, 0);
-    if ((fd = open_file("backup_mem1", O_CREATE | O_RDWR)) < 0)
-        panic("save_process: backup_mem1 open_file failedd\n");
-    file = proc->ofile[fd];
-    if ((filewrite(file, mem, PGSIZE)) != PGSIZE)
-        panic("save_process: backup_mem1 filewrite failed\n");
-    kfree(mem);
-
-    mem = copy_pgtable2mem(proc->pgdir, 4096);
-    if ((fd = open_file("backup_mem2", O_CREATE | O_RDWR)) < 0)
-        panic("save_process: backup_mem2 open_file failedd\n");
-    file = proc->ofile[fd];
-    if ((filewrite(file, mem, PGSIZE)) != PGSIZE)
-        panic("save_process: backup_mem2 filewrite failed\n");
-    kfree(mem);
-
-    mem = copy_pgtable2mem(proc->pgdir, 8192);
-    if ((fd = open_file("backup_mem3", O_CREATE | O_RDWR)) < 0)
-        panic("save_process: backup_mem3 open_file failedd\n");
-    file = proc->ofile[fd];
-    if ((filewrite(file, mem, PGSIZE)) != PGSIZE)
-        panic("save_process: backup_mem3 filewrite failed\n");
-    kfree(mem);
-
-//    }
+    //region page tables
+    char pg_file_name[size + 3];
+    strcat(pg_file_name, path, "_pg");
+    write_to_file_pgtables(proc, pg_file_name);
     //endregion
 
-    cprintf("save_process: successful\n");
+    // decrement pid in order to use by other processes (not sure about this one!)
+    nextpid--;
     exit();
-
+    cprintf("suspend_process: finished\n");
+    return 0;
 }
 
-void
+int
 resume_process(char *path) {
-    int fd;
-    struct file *file;
+    cprintf("resume_process: started\n");
+    int size = strlen(path);
 
-    //region process struct
-    struct proc p;
-
-    if ((fd = open_file("backup", O_RDONLY)) < 0)
-        panic("load_process: backup open_file failed\n");
-    file = proc->ofile[fd];
-    if ((fileread(file, (char *) &p, sizeof(struct proc))) != sizeof(struct proc))
-        panic("load_process: backup fileread failed\n");
-    //endregion
+    procdump();
 
     struct proc *ld_proc;
     if ((ld_proc = allocproc()) == 0)
-        return;
+        return -1;
 
     if ((ld_proc->pgdir = setupkvm()) == 0)
         panic("load_process: setupkvm\n");
 
-    //region beta (copy page tables)
-    char *mem1 = kalloc();
-    if ((fd = open_file("backup_mem1", O_RDONLY)) < 0)
-        panic("load_process: backup_mem1 open_file failed\n");
-    file = proc->ofile[fd];
-    if ((fileread(file, mem1, PGSIZE)) != PGSIZE)
-        panic("load_process: backup_mem1 fileread failed\n");
-    if ((copy_mem2pgtable(ld_proc->pgdir, 0, mem1)) < 0)
-        panic("load_process: backup_mem1 memory to pagetable mapping failed\n");
-
-    char *mem2 = kalloc();
-    if ((fd = open_file("backup_mem2", O_RDONLY)) < 0)
-        panic("load_process: backup_mem2 open_file failed\n");
-    file = proc->ofile[fd];
-    if ((fileread(file, mem2, PGSIZE)) != PGSIZE)
-        panic("load_process: backup_mem2 fileread failed\n");
-    if ((copy_mem2pgtable(ld_proc->pgdir, (void *) 4096, mem2)) < 0)
-        panic("load_process: backup_mem1 memory to pagetable mapping failed\n");
-
-    char *mem3 = kalloc();
-    if ((fd = open_file("backup_mem3", O_RDONLY)) < 0)
-        panic("load_process: backup_mem3 open_file failed\n");
-    file = proc->ofile[fd];
-    if ((fileread(file, mem3, PGSIZE)) != PGSIZE)
-        panic("load_process: backup_mem3 fileread failed\n");
-    if ((copy_mem2pgtable(ld_proc->pgdir, (void *) 8192, mem3)) < 0)
-        panic("load_process: backup_mem1 memory to pagetable mapping failed\n");
+    //region process struct
+    struct proc p;
+    char proc_file_name[size + 5];
+    strcat(proc_file_name, path, "_proc");
+    read_from_file(proc, proc_file_name, &p, sizeof(struct proc));
     //endregion
 
-//    //region trapframe
-//    memset(ld_proc->tf, 0, sizeof(struct trapframe));
-//
-//    cprintf("trapframe : %d and %d\n", ld_proc->tf->eip, ld_proc->tf->cs);
-//
-//    if ((fd = open_file("backup_tf", O_RDONLY)) < 0)
-//        panic("load_process: backup_tf open_file failed\n");
-//    file = proc->ofile[fd];
-//    if ((fileread(file, (char *) ld_proc->tf, sizeof(struct trapframe))) != sizeof(struct trapframe))
-//        panic("load_process: backup_tf fileread failed\n");
-//
-//    cprintf("trapframe : %d and %d\n", ld_proc->tf->eip, ld_proc->tf->cs);
-//    //endregion
+    //region trapframe
+    memset(ld_proc->tf, 0, sizeof(struct trapframe));
 
-    cprintf("load proc %d\n", ld_proc->sz);
+    char tf_file_name[size + 3];
+    strcat(tf_file_name, path, "_tf");
+    read_from_file(proc, tf_file_name, ld_proc->tf, sizeof(struct trapframe));
+    //endregion
+
+    //region page tables
+    char pg_file_name[size + 3];
+    strcat(pg_file_name, path, "_pg");
+    map_from_file_pgtables(proc, pg_file_name, ld_proc, p.sz);
+    //endregion
+
     ld_proc->sz = p.sz;
-    cprintf("load proc %d\n", ld_proc->sz);
+    // Make the current process parent of the resumed process
+    ld_proc->parent = proc;
 
     int i;
     for (i = 0; i < NOFILE; i++)
@@ -280,50 +202,11 @@ resume_process(char *path) {
     // lock to force the compiler to emit the np->state write last.
     acquire(&ptable.lock);
     ld_proc->state = RUNNABLE;
-    cprintf("process state: RUNNABLE\n");
     release(&ptable.lock);
 
-    cprintf("current proc : %d and loaded process : %d\n", proc->pid, ld_proc->pid);
-
-    //region work with buffer
-//    cprintf("I'm here\n");
-//    struct buf *buffer = bread(0, 512);
-//    struct proc proc1;
-//    memmove(&proc1, buffer->data, sizeof(buffer->data));
-//
-//    struct proc *loaded_process;
-//
-//    if ((loaded_process = allocproc()) == 0) {
-//        cprintf("I'm here1\n");
-//        return;
-//    }
-//
-//    if ((loaded_process->pgdir = copyuvm(proc1.pgdir, proc1.sz)) == 0) {
-//        kfree(loaded_process->kstack);
-//        loaded_process->kstack = 0;
-//        loaded_process->state = UNUSED;
-//        cprintf("I'm here2\n");
-//        return;
-//    }
-//    loaded_process->sz = proc1.sz;
-//    *loaded_process->tf = *proc1.tf;
-//
-//    // Clear %eax so that fork returns 0 in the child.
-//    loaded_process->tf->eax = 0;
-//
-//    int i;
-//    for (i = 0; i < NOFILE; i++)
-//        if (proc1.ofile[i])
-//            loaded_process->ofile[i] = filedup(proc1.ofile[i]);
-//    loaded_process->cwd = idup(proc1.cwd);
-//
-//    safestrcpy(loaded_process->name, proc1.name, sizeof(proc1.name));
-//
-//    // lock to force the compiler to emit the np->state write last.
-//    acquire(&ptable.lock);
-//    loaded_process->state = RUNNABLE;
-//    release(&ptable.lock);
-    //endregion
+    procdump();
+    cprintf("suspend_process: finished\n");
+    return 0;
 }
 
 // Create a new process copying p as the parent.
