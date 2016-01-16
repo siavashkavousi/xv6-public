@@ -98,9 +98,24 @@ itoa(int s) {
 }
 
 void
-concat(char *dst, char *src1, char src2) {
-    memmove(dst, 0, strlen(src1) + 1);
-    memmove(dst, src1, strlen(src1));
-    memmove(dst + strlen(src1), &src2, 1);
+strcat(char *dst, char *src1, char *src2) {
+    int sz1 = strlen(src1), sz2 = strlen(src2);
+
+    memset(dst, 0, sz1 + sz2 + 1);
+    memmove(dst, src1, sz1);
+    memmove(dst + sz1, src2, sz2);
+
+    dst[sz1 + sz2] = '\0';
+}
+
+void
+strncat(char *dst, char *src1, char *src2, uint n) {
+    int sz1 = strlen(src1);
+
+    memset(dst, 0, sz1 + n + 1);
+    memmove(dst, src1, sz1);
+    memmove(dst + sz1, src2, n);
+
+    dst[sz1 + n] = '\0';
 }
 
