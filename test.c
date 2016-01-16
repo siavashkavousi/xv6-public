@@ -22,9 +22,8 @@ main(void) {
             printf(stdout, "number %d\n", n);
         }
 
-        printf(stdout, "save_process is about to call...\n");
+        printf(stdout, "suspend_process is about to call...\n");
         suspend_process("backup");
-        printf(stdout, "save_process is called!\n");
 
         for (n = N; n > 0; n--) {
             printf(stdout, "number %d\n", n);
@@ -33,26 +32,8 @@ main(void) {
         exit();
     }
 
-//    pid = fork();
-//    if (pid < 0) {
-//        printf(stdout, "fork failed\n");
-//        exit();
-//    }
-//
-//    if (pid == 0) {
-//        load_process();
-//        exit();
-//    }
-
     wait();
-//    sleep(100);
-
-    printf(stdout, "now it's time to load the process\n");
-
-    resume_process("backup");
 
     printf(stdout, "I'm done!\n");
-
-    wait();
     exit();
 }
