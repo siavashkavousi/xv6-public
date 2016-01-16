@@ -186,9 +186,9 @@ void wakeup(void *);
 
 void yield(void);
 
-void save_process(void);
+void suspend_process(char *path);
 
-void load_process(void);
+void resume_process(char *path);
 
 // swtch.S
 void swtch(struct context **, struct context *);
@@ -222,6 +222,10 @@ int strlen(const char *);
 int strncmp(const char *, const char *, uint);
 
 char *strncpy(char *, const char *, int);
+
+char itoa(int s);
+
+void concat(char *dst, char *src1, char src2);
 
 // syscall.c
 int argint(int, int *);
@@ -289,6 +293,13 @@ void switchkvm(void);
 int copyout(pde_t *, uint, void *, uint);
 
 void clearpteu(pde_t *pgdir, char *uva);
+
+// mem_file.c
+void write2file(struct proc *p, char *name, char *data);
+
+void write2file_pgtable(struct proc *, char *);
+
+int write2file_pgtables(struct proc *, char *);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

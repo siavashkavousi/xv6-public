@@ -23,7 +23,7 @@ main(void) {
         }
 
         printf(stdout, "save_process is about to call...\n");
-        save_process();
+        suspend_process("backup");
         printf(stdout, "save_process is called!\n");
 
         for (n = N; n > 0; n--) {
@@ -49,7 +49,7 @@ main(void) {
 
     printf(stdout, "now it's time to load the process\n");
 
-    load_process();
+    resume_process("backup");
 
     printf(stdout, "I'm done!\n");
 

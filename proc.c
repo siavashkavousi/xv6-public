@@ -124,7 +124,7 @@ growproc(int n) {
 }
 
 void
-save_process(void) {
+suspend_process(char *path) {
     //region work with buffer
 //    struct buf *buffer = bread(0, 512);
 //
@@ -142,14 +142,11 @@ save_process(void) {
     struct file *file;
 
     //region process struct
-    if ((fd = open_file("backup", O_CREATE | O_RDWR)) < 0)
-        panic("save_process: backup open_file failed\n");
-    file = proc->ofile[fd];
-    if ((filewrite(file, (char *) proc, sizeof(struct proc))) != sizeof(struct proc))
-        panic("save_process: backup filewrite failed\n");
+    write2file(proc, "backup", (char *) proc);
     //endregion
 
     //region trapframe
+//    write2file(proc, "backup_tf", )
     if ((fd = open_file("backup_tf", O_CREATE | O_RDWR)) < 0)
         panic("save_process: backup_tf open_file failed\n");
     file = proc->ofile[fd];
@@ -163,6 +160,14 @@ save_process(void) {
 //    int i;
 //    int counter = 0;
 //    for (i = 0; i < proc->sz; i += PGSIZE) {
+
+    char buf[4];
+    char *sl = "sia";
+    int x = 0;
+    char i = (char) (x + 48);
+
+    concat(buf, sl, i);
+
     char *mem = copy_pgtable2mem(proc->pgdir, 0);
     if ((fd = open_file("backup_mem1", O_CREATE | O_RDWR)) < 0)
         panic("save_process: backup_mem1 open_file failedd\n");
@@ -196,7 +201,7 @@ save_process(void) {
 }
 
 void
-load_process(void) {
+resume_process(char *path) {
     int fd;
     struct file *file;
 
@@ -246,19 +251,19 @@ load_process(void) {
         panic("load_process: backup_mem1 memory to pagetable mapping failed\n");
     //endregion
 
-    //region trapframe
-    memset(ld_proc->tf, 0, sizeof(struct trapframe));
-
-    cprintf("trapframe : %d and %d\n", ld_proc->tf->eip, ld_proc->tf->cs);
-
-    if ((fd = open_file("backup_tf", O_RDONLY)) < 0)
-        panic("load_process: backup_tf open_file failed\n");
-    file = proc->ofile[fd];
-    if ((fileread(file, (char *) ld_proc->tf, sizeof(struct trapframe))) != sizeof(struct trapframe))
-        panic("load_process: backup_tf fileread failed\n");
-
-    cprintf("trapframe : %d and %d\n", ld_proc->tf->eip, ld_proc->tf->cs);
-    //endregion
+//    //region trapframe
+//    memset(ld_proc->tf, 0, sizeof(struct trapframe));
+//
+//    cprintf("trapframe : %d and %d\n", ld_proc->tf->eip, ld_proc->tf->cs);
+//
+//    if ((fd = open_file("backup_tf", O_RDONLY)) < 0)
+//        panic("load_process: backup_tf open_file failed\n");
+//    file = proc->ofile[fd];
+//    if ((fileread(file, (char *) ld_proc->tf, sizeof(struct trapframe))) != sizeof(struct trapframe))
+//        panic("load_process: backup_tf fileread failed\n");
+//
+//    cprintf("trapframe : %d and %d\n", ld_proc->tf->eip, ld_proc->tf->cs);
+//    //endregion
 
     cprintf("load proc %d\n", ld_proc->sz);
     ld_proc->sz = p.sz;

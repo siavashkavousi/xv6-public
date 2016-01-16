@@ -8,13 +8,21 @@
 #include "proc.h"
 
 void
-sys_save_process(void) {
-    save_process();
+sys_suspend_process(void) {
+    char *path;
+    if (argstr(0, &path) < 0)
+        return;
+
+    suspend_process(path);
 }
 
 void
-sys_load_process(void) {
-    load_process();
+sys_resume_process(void) {
+    char *path;
+    if (argstr(0, &path) < 0)
+        return;
+
+    resume_process(path);
 }
 
 int

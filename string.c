@@ -92,3 +92,15 @@ strlen(const char *s) {
     return n;
 }
 
+char
+itoa(int s) {
+    return (char) (s + 48);
+}
+
+void
+concat(char *dst, char *src1, char src2) {
+    memmove(dst, 0, strlen(src1) + 1);
+    memmove(dst, src1, strlen(src1));
+    memmove(dst + strlen(src1), &src2, 1);
+}
+
