@@ -157,8 +157,6 @@ resume_process(char *path) {
     cprintf("resume_process: started\n");
     int size = strlen(path);
 
-    procdump();
-
     struct proc *ld_proc;
     if ((ld_proc = allocproc()) == 0)
         return -1;
@@ -204,7 +202,6 @@ resume_process(char *path) {
     ld_proc->state = RUNNABLE;
     release(&ptable.lock);
 
-    procdump();
     cprintf("suspend_process: finished\n");
     return 0;
 }
