@@ -292,6 +292,30 @@ clearpteu(pde_t *pgdir, char *uva) {
     *pte &= ~PTE_U;
 }
 
+char *
+copy_pgtable2mem(pde_t *pgdir, int page_number) {
+    pte_t *pte;
+    uint pa;
+    char *mem;
+
+    if ((pte = walkpgdir(pgdir, (void *) page_number, 0)) == 0)
+        panic("copy_pgtable2mem: pte should exist");
+    if (!(*pte & PTE_P))
+        panic("copy_pgtable2mem: page not present");
+    pa = PTE_ADDR(*pte);
+    if ((mem = kalloc()) == 0)
+        panic("copy_pgtable2mem: kalloc failed");
+    memmove(mem, (char *) p2v(pa), PGSIZE);
+    return mem;
+}
+
+int
+copy_mem2pgtable(pde_t *pgdir, const void *va, char *mem) {
+    if ((mappages(pgdir, (void *) va, PGSIZE, v2p(mem), PTE_W | PTE_U)) < 0)
+        return -1;
+    return 0;
+}
+
 // Given a parent process's page table, create a copy
 // of it for a child.
 pde_t *
@@ -368,4 +392,3 @@ copyout(pde_t *pgdir, uint va, void *p, uint len) {
 // Blank page.
 //PAGEBREAK!
 // Blank page.
-
