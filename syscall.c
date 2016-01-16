@@ -118,8 +118,6 @@ extern int sys_suspend_process(void);
 
 extern int sys_resume_process(void);
 
-extern int sys_open_file(void);
-
 static int (*syscalls[])(void) = {
         [SYS_fork]    sys_fork,
         [SYS_exit]    sys_exit,
@@ -144,7 +142,6 @@ static int (*syscalls[])(void) = {
         [SYS_close]   sys_close,
         [SYS_suspend_process] sys_suspend_process,
         [SYS_resume_process] sys_resume_process,
-        [SYS_open_file] sys_open_file,
 };
 
 void

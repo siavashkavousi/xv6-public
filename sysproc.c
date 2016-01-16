@@ -7,22 +7,22 @@
 #include "mmu.h"
 #include "proc.h"
 
-void
+int
 sys_suspend_process(void) {
     char *path;
     if (argstr(0, &path) < 0)
-        return;
+        return -1;
 
-    suspend_process(path);
+    return suspend_process(path);
 }
 
-void
+int
 sys_resume_process(void) {
     char *path;
     if (argstr(0, &path) < 0)
-        return;
+        return -1;
 
-    resume_process(path);
+    return resume_process(path);
 }
 
 int

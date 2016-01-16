@@ -186,9 +186,9 @@ void wakeup(void *);
 
 void yield(void);
 
-void suspend_process(char *path);
+int suspend_process(char *path);
 
-void resume_process(char *path);
+int resume_process(char *path);
 
 // swtch.S
 void swtch(struct context **, struct context *);
@@ -225,7 +225,9 @@ char *strncpy(char *, const char *, int);
 
 char itoa(int s);
 
-void concat(char *dst, char *src1, char src2);
+void strcat(char *dst, char *src1, char *src2);
+
+void strncat(char *dst, char *src1, char *src2, uint n);
 
 // syscall.c
 int argint(int, int *);
@@ -280,9 +282,9 @@ void inituvm(pde_t *, char *, uint);
 
 int loaduvm(pde_t *, char *, struct inode *, uint, uint);
 
-char *copy_pgtable2mem(pde_t *, int);
+char *copy_pgtable2mem(pde_t *pgdir, int va);
 
-int copy_mem2pgtable(pde_t *, const void *, char *);
+int copy_mem2pgtable(pde_t *pgdir, const void *va, char *mem);
 
 pde_t *copyuvm(pde_t *, uint);
 
@@ -295,11 +297,13 @@ int copyout(pde_t *, uint, void *, uint);
 void clearpteu(pde_t *pgdir, char *uva);
 
 // mem_file.c
-void write2file(struct proc *p, char *name, char *data);
+void write_to_file(struct proc *p, char *name, char *data, int size);
 
-void write2file_pgtable(struct proc *, char *);
+int write_to_file_pgtables(struct proc *p, char *name);
 
-int write2file_pgtables(struct proc *, char *);
+void read_from_file(struct proc *p, char *name, void *data, int size);
+
+void map_from_file_pgtables(struct proc *current_process, char *name, struct proc *on_resume_process, int process_size);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
