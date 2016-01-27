@@ -23,9 +23,9 @@ main(void) {
         }
 
         printf(stdout, "suspend_process is about to call...\n");
-        suspend_process("backup");
+        pause("backup");
 
-        for (n = N; n > 0; n--) {
+        for (; n < 10; n++) {
             printf(stdout, "number %d\n", n);
         }
 

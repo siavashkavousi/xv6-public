@@ -9,7 +9,7 @@ int
 main(void) {
     printf(stdout, "now it's time to load the process\n");
 
-    resume_process("backup");
+    resume("backup");
 
     wait();
     printf(stdout, "I'm done!\n");
