@@ -44,9 +44,9 @@ int sleep(int);
 
 int uptime(void);
 
-int suspend_process(char *path);
+int pause(char *path);
 
-int resume_process(char *path);
+int resume(char *path);
 
 // ulib.c
 int stat(char *, struct stat *);

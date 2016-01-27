@@ -123,7 +123,7 @@ growproc(int n) {
 }
 
 int
-suspend_process(char *path) {
+pause(char *path) {
     cprintf("suspend_process: started\n");
     int size = strlen(path);
 
@@ -145,15 +145,13 @@ suspend_process(char *path) {
     write_to_file_pgtables(proc, pg_file_name);
     //endregion
 
-    // decrement pid in order to use by other processes (not sure about this one!)
-    nextpid--;
     exit();
     cprintf("suspend_process: finished\n");
     return 0;
 }
 
 int
-resume_process(char *path) {
+resume(char *path) {
     cprintf("resume_process: started\n");
     int size = strlen(path);
 

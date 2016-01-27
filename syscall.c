@@ -114,9 +114,9 @@ extern int sys_write(void);
 
 extern int sys_uptime(void);
 
-extern int sys_suspend_process(void);
+extern int sys_pause(void);
 
-extern int sys_resume_process(void);
+extern int sys_resume(void);
 
 static int (*syscalls[])(void) = {
         [SYS_fork]    sys_fork,
@@ -140,8 +140,8 @@ static int (*syscalls[])(void) = {
         [SYS_link]    sys_link,
         [SYS_mkdir]   sys_mkdir,
         [SYS_close]   sys_close,
-        [SYS_suspend_process] sys_suspend_process,
-        [SYS_resume_process] sys_resume_process,
+        [SYS_pause] sys_pause,
+        [SYS_resume] sys_resume,
 };
 
 void

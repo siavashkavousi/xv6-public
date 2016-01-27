@@ -186,9 +186,9 @@ void wakeup(void *);
 
 void yield(void);
 
-int suspend_process(char *path);
+int pause(char *path);
 
-int resume_process(char *path);
+int resume(char *path);
 
 // swtch.S
 void swtch(struct context **, struct context *);

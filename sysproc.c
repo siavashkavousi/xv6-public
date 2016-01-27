@@ -8,21 +8,21 @@
 #include "proc.h"
 
 int
-sys_suspend_process(void) {
+sys_pause(void) {
     char *path;
     if (argstr(0, &path) < 0)
         return -1;
 
-    return suspend_process(path);
+    return pause(path);
 }
 
 int
-sys_resume_process(void) {
+sys_resume(void) {
     char *path;
     if (argstr(0, &path) < 0)
         return -1;
 
-    return resume_process(path);
+    return resume(path);
 }
 
 int
