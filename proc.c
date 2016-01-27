@@ -124,7 +124,6 @@ growproc(int n) {
 
 int
 pause(char *path) {
-    cprintf("suspend_process: started\n");
     int size = strlen(path);
 
     //region process struct
@@ -146,13 +145,11 @@ pause(char *path) {
     //endregion
 
     exit();
-    cprintf("suspend_process: finished\n");
     return 0;
 }
 
 int
 resume(char *path) {
-    cprintf("resume_process: started\n");
     int size = strlen(path);
 
     struct proc *ld_proc;
@@ -200,7 +197,6 @@ resume(char *path) {
     ld_proc->state = RUNNABLE;
     release(&ptable.lock);
 
-    cprintf("suspend_process: finished\n");
     return 0;
 }
 
